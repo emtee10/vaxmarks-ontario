@@ -1,4 +1,10 @@
-import type { MilestoneEvent, SortDirection, SortKey } from '../types/event';
+import type {
+  FilterKey,
+  FilterState,
+  MilestoneEvent,
+  SortDirection,
+  SortKey,
+} from '../types/event';
 
 export function formatListValue(value: string | string[] | undefined): string {
   if (Array.isArray(value)) {
@@ -33,10 +39,57 @@ export function sortEvents(
   });
 }
 
+export function getUniqueValues(
+  events: MilestoneEvent[],
+  key: FilterKey,
+): string[] {
+  const values = events.flatMap((event) => getEventValues(event, key));
+
+  return [...new Set(values)].sort((first, second) =>
+    first.localeCompare(second, undefined, {
+      numeric: true,
+      sensitivity: 'base',
+    }),
+  );
+}
+
+export function filterEvents(
+  events: MilestoneEvent[],
+  filters: FilterState,
+): MilestoneEvent[] {
+  return events.filter((event) =>
+    Object.entries(filters).every(([key, selectedValues]) => {
+      if (selectedValues.length === 0) {
+        return true;
+      }
+
+      const eventValues = getEventValues(event, key as FilterKey);
+
+      return selectedValues.some((selectedValue) =>
+        eventValues.includes(selectedValue),
+      );
+    }),
+  );
+}
+
+export function hasActiveFilters(filters: FilterState): boolean {
+  return Object.values(filters).some((values) => values.length > 0);
+}
+
 function formatSortValue(event: MilestoneEvent, key: SortKey): string {
   if (key === 'agent') {
     return formatListValue(event.agent);
   }
 
   return event[key] || '';
+}
+
+function getEventValues(event: MilestoneEvent, key: FilterKey): string[] {
+  const value = event[key];
+
+  if (Array.isArray(value)) {
+    return value.filter(Boolean);
+  }
+
+  return value ? [value] : [];
 }

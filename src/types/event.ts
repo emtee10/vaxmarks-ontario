@@ -27,3 +27,12 @@ export interface SortState {
   key: SortKey;
   direction: SortDirection;
 }
+
+export type FilterKey =
+  | 'disease'
+  | 'agent'
+  | 'population'
+  | 'event_type'
+  | 'evidence_strength';
+
+export type FilterState = Record<FilterKey, string[]>;
