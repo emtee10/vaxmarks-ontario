@@ -22,6 +22,27 @@ export function formatLabel(value: string | undefined): string {
   return value.replaceAll('_', ' ');
 }
 
+export function normalizeString(value: string | undefined): string {
+  return (value || '').trim().toLocaleLowerCase();
+}
+
+export function searchEvents(
+  events: MilestoneEvent[],
+  searchTerm: string,
+): MilestoneEvent[] {
+  const query = normalizeString(searchTerm);
+
+  if (!query) {
+    return events;
+  }
+
+  return events.filter((event) =>
+    getSearchValues(event).some((value) =>
+      normalizeString(value).includes(query),
+    ),
+  );
+}
+
 export function sortEvents(
   events: MilestoneEvent[],
   key: SortKey,
@@ -74,6 +95,21 @@ export function filterEvents(
 
 export function hasActiveFilters(filters: FilterState): boolean {
   return Object.values(filters).some((values) => values.length > 0);
+}
+
+function getSearchValues(event: MilestoneEvent): string[] {
+  return [
+    event.summary,
+    event.agent,
+    event.disease,
+    event.population,
+    event.event_type,
+    event.short_title,
+    event.notes,
+    event.id,
+  ]
+    .flatMap((value) => (Array.isArray(value) ? value : [value]))
+    .filter((value): value is string => Boolean(value));
 }
 
 function formatSortValue(event: MilestoneEvent, key: SortKey): string {

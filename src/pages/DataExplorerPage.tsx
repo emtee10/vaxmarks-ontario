@@ -9,6 +9,7 @@ import {
   filterEvents,
   getUniqueValues,
   hasActiveFilters,
+  searchEvents,
   sortEvents,
 } from '../utils/events';
 
@@ -34,6 +35,7 @@ export function DataExplorerPage() {
     direction: 'desc',
   });
   const [filters, setFilters] = useState<FilterState>(emptyFilters);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const filterGroups = useMemo(
     () =>
@@ -46,8 +48,8 @@ export function DataExplorerPage() {
   );
 
   const filteredEvents = useMemo(
-    () => filterEvents(events, filters),
-    [filters],
+    () => filterEvents(searchEvents(events, searchTerm), filters),
+    [filters, searchTerm],
   );
 
   const sortedEvents = useMemo(
@@ -86,12 +88,20 @@ export function DataExplorerPage() {
     setFilters(emptyFilters);
   }
 
+  function handleClearSearch() {
+    setSearchTerm('');
+  }
+
   return (
     <div className="app-shell">
       <LogoHeader />
       <main className="page-content">
         <section className="toolbar" aria-label="Data explorer controls">
-          <SearchBar />
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            onClear={handleClearSearch}
+          />
           <p className="record-count" aria-live="polite">
             {sortedEvents.length} records
           </p>
@@ -109,8 +119,8 @@ export function DataExplorerPage() {
           <div className="section-heading">
             <h2 id="events-heading">Milestone Events</h2>
             <p>
-              {hasActiveFilters(filters)
-                ? 'Showing records that match the selected filter chips.'
+              {searchTerm || hasActiveFilters(filters)
+                ? 'Showing records that match the current search and filters.'
                 : 'Sortable public health timeline records from the local dataset.'}
             </p>
           </div>
@@ -123,7 +133,7 @@ export function DataExplorerPage() {
           ) : (
             <div className="empty-state">
               <h3>No matching records</h3>
-              <p>Clear one or more filters to bring records back into view.</p>
+              <p>Clear the search or one or more filters to bring records back into view.</p>
             </div>
           )}
         </section>
