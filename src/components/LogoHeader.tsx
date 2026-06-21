@@ -1,4 +1,4 @@
-import logoUrl from '../../assets/image.png';
+import logoUrl from '../../assets/image-small.png';
 
 export function LogoHeader() {
   return (
